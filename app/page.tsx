@@ -15,8 +15,10 @@ import {
   CartesianGrid,
   ResponsiveContainer,
 } from "recharts";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
+  const router = useRouter();
   const [stats, setStats] = useState({
     campaigns: 0,
     employees: 0,
@@ -31,8 +33,21 @@ export default function Home() {
   const [campaignsData, setCampaignsData] = useState<any[]>([]);
 
   useEffect(() => {
-    loadStats();
-  }, []);
+  checkUser();
+}, []);
+
+async function checkUser() {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (!session) {
+    router.push("/login");
+    return;
+  }
+
+  loadStats();
+}
 
   async function loadStats() {
     const { count: campaignCount } = await supabase
@@ -132,9 +147,21 @@ setCampaignsData(campaignsTable || []);
 
   return (
     <main className="p-10">
-      <h1 className="text-4xl font-bold mb-8">
-        PhishGuard Analytics Dashboard
-      </h1>
+      <div className="flex justify-between items-center mb-8">
+  <h1 className="text-4xl font-bold">
+    PhishGuard Analytics Dashboard
+  </h1>
+
+  <button
+    onClick={async () => {
+      await supabase.auth.signOut();
+      router.push("/login");
+    }}
+    className="bg-red-600 px-4 py-2 rounded"
+  >
+    Logout
+  </button>
+</div>
 
       {/* Dashboard Cards */}
 
