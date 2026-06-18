@@ -31,6 +31,9 @@ export default function Home() {
   const [employees, setEmployees] = useState<any[]>([]);
   const [resultsData, setResultsData] = useState<any[]>([]);
   const [campaignsData, setCampaignsData] = useState<any[]>([]);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [priority, setPriority] = useState("Medium");
 
   useEffect(() => {
   checkUser();
@@ -47,6 +50,16 @@ async function checkUser() {
   }
 
   loadStats();
+}
+  async function fetchCampaigns() {
+  const { data, error } = await supabase
+    .from("campaigns")
+    .select("*")
+    .order("id");
+
+  if (!error) {
+    setCampaignsData(data || []);
+  }
 }
 
   async function loadStats() {
@@ -87,11 +100,7 @@ async function checkUser() {
 
     setEmployees(employeeData || []);
     setResultsData(resultsTable || []);
-    const { data: campaignsTable } = await supabase
-  .from("campaigns")
-  .select("*");
-
-setCampaignsData(campaignsTable || []);
+    await fetchCampaigns();
 
     setStats({
       campaigns: campaignCount || 0,
@@ -101,6 +110,38 @@ setCampaignsData(campaignsTable || []);
       clicked: clickedCount || 0,
       submitted: submittedCount || 0,
     });
+  }
+
+  async function createCampaign() {
+    const { error } = await supabase
+      .from("campaigns")
+      .insert([
+        {
+          name,
+          email,
+          priority,
+          status: "Active",
+        },
+      ]);
+
+    if (!error) {
+      setName("");
+      setEmail("");
+      setPriority("Medium");
+
+      fetchCampaigns();
+      loadStats();
+    }
+  }
+
+  async function deleteCampaign(id: number) {
+    await supabase
+      .from("campaigns")
+      .delete()
+      .eq("id", id);
+
+    fetchCampaigns();
+    loadStats();
   }
 
   const riskData = [
@@ -177,6 +218,44 @@ setCampaignsData(campaignsTable || []);
           value={stats.submitted}
         />
       </div>
+      <h2 className="text-2xl font-bold mt-10 mb-4">
+  Campaign Management
+</h2>
+
+<div className="border p-4 rounded mb-6">
+  <input
+    type="text"
+    placeholder="Campaign Name"
+    value={name}
+    onChange={(e) => setName(e.target.value)}
+    className="border p-2 mr-2 text-black"
+  />
+
+  <input
+    type="email"
+    placeholder="Email"
+    value={email}
+    onChange={(e) => setEmail(e.target.value)}
+    className="border p-2 mr-2 text-black"
+  />
+
+  <select
+    value={priority}
+    onChange={(e) => setPriority(e.target.value)}
+    className="border p-2 text-black"
+  >
+    <option>Low</option>
+    <option>Medium</option>
+    <option>High</option>
+  </select>
+
+  <button
+    onClick={createCampaign}
+    className="bg-green-600 px-4 py-2 ml-2 rounded"
+  >
+    Create Campaign
+  </button>
+</div>
 
       {/* Employee Risk Analysis */}
 
@@ -371,6 +450,9 @@ setCampaignsData(campaignsTable || []);
       <th className="border p-2">
         Submitted
       </th>
+      <th className="border p-2">
+  Action
+</th>
     </tr>
   </thead>
 
@@ -439,6 +521,14 @@ setCampaignsData(campaignsTable || []);
               ).length
             }
           </td>
+          <td className="border p-2">
+  <button
+    onClick={() => deleteCampaign(campaign.id)}
+    className="bg-red-600 px-3 py-1 rounded"
+  >
+    Delete
+  </button>
+</td>
 
         </tr>
       );
