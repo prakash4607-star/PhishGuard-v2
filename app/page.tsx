@@ -34,6 +34,12 @@ export default function Home() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [priority, setPriority] = useState("Medium");
+  const [employeeName, setEmployeeName] = useState("");
+  const [employeeEmail, setEmployeeEmail] = useState("");
+  const [department, setDepartment] = useState("IT");
+  const [searchEmployee, setSearchEmployee] = useState("");
+  const [searchCampaign, setSearchCampaign] =
+  useState("");
 
   useEffect(() => {
   checkUser();
@@ -130,6 +136,36 @@ async function checkUser() {
       setPriority("Medium");
 
       fetchCampaigns();
+      loadStats();
+    }
+  }
+  async function createEmployee() {
+  const { error } = await supabase
+    .from("employees")
+    .insert([
+      {
+        name: employeeName,
+        email: employeeEmail,
+        department,
+      },
+    ]);
+
+  if (!error) {
+    setEmployeeName("");
+    setEmployeeEmail("");
+    setDepartment("IT");
+
+    loadStats();
+  }
+}
+
+  async function deleteEmployee(id: number) {
+    const { error } = await supabase
+      .from("employees")
+      .delete()
+      .eq("id", id);
+
+    if (!error) {
       loadStats();
     }
   }
@@ -258,10 +294,64 @@ async function checkUser() {
 </div>
 
       {/* Employee Risk Analysis */}
+<h2 className="text-2xl font-bold mt-10 mb-4">
+  Employee Management
+</h2>
 
+<div className="border p-4 rounded mb-6">
+
+  <input
+    type="text"
+    placeholder="Employee Name"
+    value={employeeName}
+    onChange={(e) =>
+      setEmployeeName(e.target.value)
+    }
+    className="border p-2 mr-2 text-black"
+  />
+
+  <input
+    type="email"
+    placeholder="Employee Email"
+    value={employeeEmail}
+    onChange={(e) =>
+      setEmployeeEmail(e.target.value)
+    }
+    className="border p-2 mr-2 text-black"
+  />
+
+  <select
+    value={department}
+    onChange={(e) =>
+      setDepartment(e.target.value)
+    }
+    className="border p-2 text-black"
+  >
+    <option>IT</option>
+    <option>HR</option>
+    <option>Finance</option>
+  </select>
+
+  <button
+    onClick={createEmployee}
+    className="bg-blue-600 px-4 py-2 ml-2 rounded"
+  >
+    Add Employee
+  </button>
+
+</div>
       <h2 className="text-2xl font-bold mt-10 mb-4">
         Employee Risk Analysis
       </h2>
+      <input
+  type="text"
+  placeholder="Search Employee..."
+  value={searchEmployee}
+  onChange={(e) =>
+    setSearchEmployee(e.target.value)
+  }
+  className="border p-2 mb-4 text-black w-full"
+/>
 
       <table className="border-collapse border border-gray-500 w-full">
         <thead>
@@ -270,11 +360,26 @@ async function checkUser() {
             <th className="border p-2">Email</th>
             <th className="border p-2">Department</th>
             <th className="border p-2">Risk</th>
+            <th className="border p-2">Action</th>
           </tr>
         </thead>
 
         <tbody>
-          {employees.map((employee) => (
+          {employees
+  .filter(
+    (employee) =>
+      employee.name
+        .toLowerCase()
+        .includes(
+          searchEmployee.toLowerCase()
+        ) ||
+      employee.email
+        .toLowerCase()
+        .includes(
+          searchEmployee.toLowerCase()
+        )
+  )
+  .map((employee) => (
             <tr key={employee.id}>
               <td className="border p-2">
                 {employee.name}
@@ -299,6 +404,14 @@ async function checkUser() {
               >
                 {getRisk(employee.id, resultsData)}
               </td>
+              <td className="border p-2">
+  <button
+    onClick={() => deleteEmployee(employee.id)}
+    className="bg-red-600 px-3 py-1 rounded"
+  >
+    Delete
+  </button>
+</td>
             </tr>
           ))}
         </tbody>
@@ -422,6 +535,15 @@ async function checkUser() {
       <h2 className="text-2xl font-bold mt-10 mb-4">
   Campaign Performance Analytics
 </h2>
+<input
+  type="text"
+  placeholder="Search Campaign..."
+  value={searchCampaign}
+  onChange={(e) =>
+    setSearchCampaign(e.target.value)
+  }
+  className="border p-2 mb-4 text-black w-full"
+/>
 
 <table className="border-collapse border border-gray-500 w-full mb-10">
 
@@ -458,7 +580,15 @@ async function checkUser() {
 
   <tbody>
 
-    {campaignsData.map((campaign) => {
+    {campaignsData
+  .filter((campaign) =>
+    campaign.name
+      .toLowerCase()
+      .includes(
+        searchCampaign.toLowerCase()
+      )
+  )
+  .map((campaign) => {
 
       const campaignResults =
         resultsData.filter(
