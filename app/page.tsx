@@ -40,6 +40,17 @@ export default function Home() {
   const [searchEmployee, setSearchEmployee] = useState("");
   const [searchCampaign, setSearchCampaign] =
   useState("");
+  const [editingId, setEditingId] =
+  useState<number | null>(null);
+
+const [editName, setEditName] =
+  useState("");
+
+const [editPriority, setEditPriority] =
+  useState("");
+
+const [editStatus, setEditStatus] =
+  useState("");
 
   useEffect(() => {
   checkUser();
@@ -169,6 +180,24 @@ async function checkUser() {
       loadStats();
     }
   }
+  async function updateCampaign() {
+  if (!editingId) return;
+
+  const { error } = await supabase
+    .from("campaigns")
+    .update({
+      name: editName,
+      priority: editPriority,
+      status: editStatus,
+    })
+    .eq("id", editingId);
+
+  if (!error) {
+    setEditingId(null);
+    fetchCampaigns();
+    loadStats();
+  }
+}
 
   async function deleteCampaign(id: number) {
     await supabase
@@ -405,13 +434,13 @@ async function checkUser() {
                 {getRisk(employee.id, resultsData)}
               </td>
               <td className="border p-2">
-  <button
-    onClick={() => deleteEmployee(employee.id)}
-    className="bg-red-600 px-3 py-1 rounded"
-  >
-    Delete
-  </button>
-</td>
+                <button
+                  onClick={() => deleteEmployee(employee.id)}
+                  className="bg-red-600 px-3 py-1 rounded"
+                >
+                  Delete
+                </button>
+              </td>
             </tr>
           ))}
         </tbody>
@@ -532,6 +561,54 @@ async function checkUser() {
         </BarChart>
     </ResponsiveContainer>
       </div>
+      {editingId && (
+  <div className="border p-4 rounded mb-4">
+
+    <h3 className="font-bold mb-2">
+      Edit Campaign
+    </h3>
+
+    <input
+      value={editName}
+      onChange={(e) =>
+        setEditName(e.target.value)
+      }
+      className="border p-2 mr-2 text-black"
+    />
+
+    <select
+      value={editPriority}
+      onChange={(e) =>
+        setEditPriority(e.target.value)
+      }
+      className="border p-2 mr-2 text-black"
+    >
+      <option>Low</option>
+      <option>Medium</option>
+      <option>High</option>
+    </select>
+
+    <select
+      value={editStatus}
+      onChange={(e) =>
+        setEditStatus(e.target.value)
+      }
+      className="border p-2 mr-2 text-black"
+    >
+      <option>Active</option>
+      <option>Completed</option>
+      <option>Draft</option>
+    </select>
+
+    <button
+      onClick={updateCampaign}
+      className="bg-green-600 px-4 py-2 rounded"
+    >
+      Save Changes
+    </button>
+
+  </div>
+)}
       <h2 className="text-2xl font-bold mt-10 mb-4">
   Campaign Performance Analytics
 </h2>
@@ -651,13 +728,27 @@ async function checkUser() {
               ).length
             }
           </td>
-          <td className="border p-2">
+          <td className="border p-2 space-x-2">
+
+  <button
+    onClick={() => {
+      setEditingId(campaign.id);
+      setEditName(campaign.name);
+      setEditPriority(campaign.priority);
+      setEditStatus(campaign.status);
+    }}
+    className="bg-yellow-600 px-3 py-1 rounded"
+  >
+    Edit
+  </button>
+
   <button
     onClick={() => deleteCampaign(campaign.id)}
     className="bg-red-600 px-3 py-1 rounded"
   >
     Delete
   </button>
+
 </td>
 
         </tr>
