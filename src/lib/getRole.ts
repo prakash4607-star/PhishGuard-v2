@@ -1,5 +1,25 @@
 import { supabase } from "./supabase";
 
+function normalizeRole(role?: string | null) {
+  const raw = role?.toLowerCase().trim() ?? "";
+  const normalized = raw.replace(/[-\s]/g, "_");
+
+  if (
+    normalized === "super_admin" ||
+    normalized === "superadmin" ||
+    normalized === "super_adimun" ||
+    normalized === "superadimun"
+  ) {
+    return "super_admin";
+  }
+
+  if (normalized === "admin") {
+    return "admin";
+  }
+
+  return normalized || "admin";
+}
+
 export async function getRole() {
   const {
     data: { user },
@@ -24,5 +44,7 @@ export async function getRole() {
     return "admin";
   }
 
-  return data?.role || "admin";
+  const role = normalizeRole(data?.role);
+  console.log("NORMALIZED ROLE:", role);
+  return role;
 }
