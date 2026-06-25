@@ -1,27 +1,32 @@
 "use client";
 
 import { useState } from "react";
-import { supabase } from "@/src/lib/supabase";
 import { useRouter } from "next/navigation";
+import { supabase } from "../../src/lib/supabase";
 
-export default function Login() {
+export default function LoginPage() {
+  const [email,setEmail] =
+    useState("");
+
+  const [password,setPassword] =
+    useState("");
+
   const router = useRouter();
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  async function login() {
 
-  async function signIn() {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    const { error } =
+      await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-    if (error) {
+    if(error){
       alert(error.message);
       return;
     }
 
-    router.push("/");
+    router.push("/dashboard");
   }
 
   return (
@@ -51,8 +56,8 @@ export default function Login() {
         />
 
         <button
-          onClick={signIn}
-          className="bg-blue-600 px-4 py-2 rounded w-full"
+          onClick={login}
+          className="bg-green-600 w-full py-2 rounded"
         >
           Login
         </button>
