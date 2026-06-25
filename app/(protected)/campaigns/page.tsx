@@ -65,28 +65,31 @@ export default function CampaignsPage() {
       fetchCampaigns();
     }
   }
-
   async function deleteCampaign(id: number, campaignName: string) {
-    console.log("ROLE:", role);
-    console.log("Deleting ID:", id);
+  console.log("DELETE CLICKED");
+  console.log("Role:", role);
+  console.log("Campaign ID:", id);
 
-    const { data, error } = await supabase
-      .from("campaigns")
-      .delete()
-      .eq("id", id)
-      .select();
+  const { data, error } = await supabase
+    .from("campaigns")
+    .delete()
+    .eq("id", id)
+    .select();
 
-    console.log("DELETE DATA:", data);
-    console.log("DELETE ERROR:", error);
+  console.log("DELETE DATA:", data);
+  console.log("DELETE ERROR:", error);
 
-    if (error) {
-      alert(error.message);
-      return;
-    }
-
-    alert("Deleted successfully");
-    fetchCampaigns();
+  if (error) {
+    alert(error.message);
+    return;
   }
+
+  await createAuditLog("Campaign Deleted", campaignName);
+
+  alert("Deleted Successfully");
+
+  fetchCampaigns();
+}
 
   async function launchCampaign(campaign: any) {
     console.log("LAUNCH BUTTON CLICKED");
