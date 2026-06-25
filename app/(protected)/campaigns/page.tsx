@@ -67,23 +67,24 @@ export default function CampaignsPage() {
   }
 
   async function deleteCampaign(id: number, campaignName: string) {
-    if (role !== "super_admin") {
-      alert("Only Super Admin can delete campaigns.");
-      return;
-    }
+    console.log("ROLE:", role);
+    console.log("Deleting ID:", id);
 
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from("campaigns")
       .delete()
-      .eq("id", id);
+      .eq("id", id)
+      .select();
+
+    console.log("DELETE DATA:", data);
+    console.log("DELETE ERROR:", error);
 
     if (error) {
-      console.error("Failed to delete campaign:", error);
-      alert(`Failed to delete campaign: ${error.message}`);
+      alert(error.message);
       return;
     }
 
-    await createAuditLog("Campaign Deleted", campaignName);
+    alert("Deleted successfully");
     fetchCampaigns();
   }
 
