@@ -13,10 +13,49 @@
   --success: #10b981;
   --warning: #f59e0b;
   --danger: #ef4444;
+
+  color-scheme: dark;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-geist-sans);
+}
+
+@layer base {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+  textarea,
+  select {
+    background-color: #0f172a;
+    color: #ffffff;
+    border: 1px solid #334155;
+    border-radius: 0.75rem;
+    padding: 0.625rem 0.75rem;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  }
+
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"])::placeholder,
+  textarea::placeholder {
+    color: #cbd5e1;
+    opacity: 1;
+  }
+
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):focus,
+  textarea:focus,
+  select:focus {
+    border-color: #22c55e;
+    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.16);
+  }
+
+  select option {
+    background-color: #0f172a;
+    color: #ffffff;
+  }
+
+  input[type="datetime-local"] {
+    color-scheme: dark;
+  }
 }
